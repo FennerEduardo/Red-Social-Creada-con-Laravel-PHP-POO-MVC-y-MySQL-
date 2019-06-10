@@ -11,6 +11,10 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
 //Usar el modelo de imagenes
 use App\Image;
+//Usar el modelo de comentarios
+use App\Comment;
+//Usar el modelo de imagenes
+use App\Like;
 
 
 class ImageController extends Controller
@@ -80,5 +84,15 @@ class ImageController extends Controller
         return view('image.detail', [
             'image' => $image
         ]);
+    }
+
+    //Método para eliminar o borrar una imagen
+    public function delete($id){
+        //Obtener el  usuario activo
+        $user = \Auth::user();
+        //Obtener el id de la imagen que se va a borrar
+        $image = Image::find($id);
+        //Obteniendo los comentarios de la imagen
+        $comments = Comment::where('image_id', $id)->get();
     }
 }
