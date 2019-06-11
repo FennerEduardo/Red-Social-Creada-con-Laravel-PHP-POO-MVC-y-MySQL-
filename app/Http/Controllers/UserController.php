@@ -19,7 +19,28 @@ class UserController extends Controller
 	public function __construct()
     {
         $this->middleware('auth');
-    }
+	}
+	
+	//Método para listar todos los usuarios de la red social
+	public function index($search = null){
+
+		if (!empty($search)) {
+			//Liste los usuarios cuando el nickname coincida con la búsqueda
+			$users = User::where('nick', 'LIKE', '%'.$search.'%')
+							->orWhere('name', 'LIKE', '%'.$search.'%')
+							->orWhere('surname', 'LIKE', '%'.$search.'%')
+							->orderBy('id', 'desc')
+							->paginate(5);
+		}else{ 
+			//obtener todos los usuarios
+			$users = User::orderBy('id', 'desc')->paginate(5);
+		}
+		//Retornar una vista para listar todos los usuarios
+		return view('user.index', [
+			'users' => $users
+		]);
+	}
+
     //Método para la configuración de usuarios
     public function config(){
     	//Retornar la vista
@@ -96,6 +117,6 @@ class UserController extends Controller
         return view('user.profile', [
             'user' => $user
         ]);
-    }
-
+	}
+	
 }

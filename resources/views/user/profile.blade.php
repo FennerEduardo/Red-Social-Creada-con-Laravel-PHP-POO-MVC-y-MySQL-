@@ -20,7 +20,8 @@
                 <div class="clearfix"></div>
                 <hr>
             </div>
-            <div class="clearfix"></div>
+
+                <div class="clearfix"></div>
             @foreach($user->images as $image)
                 @include('includes.image', ['image' => $image])
             @endforeach

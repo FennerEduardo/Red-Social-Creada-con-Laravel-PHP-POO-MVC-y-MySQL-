@@ -54,4 +54,11 @@ window.addEventListener("load", function(){
 		});
 	}
 	dislike();
+
+	//Buscador
+	$('#buscador').submit(function(e){
+		//e.preventDefault();
+		$(this).attr('action', url + '/gente/' + $('#buscador #search').val());
+		//$(this).submit();
+	});
 });
