@@ -11,112 +11,124 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
 // Usar el modelo de usuario
 use App\User;
+//Usar el facade de don pdf
+use Barryvdh\DomPDF\Facade as PDF;
+//Usar facade para excel
+use Maatwebsite\Excel\Facades\Excel;
+//Usar la instancia de exportación de archivos
+use App\Exports\UsersExport;
 
-class UserController extends Controller
-{
+class UserController extends Controller {
 
-	//Método constructor para traer el middleware de autenticación 
-	public function __construct()
-    {
+    //Método constructor para traer el middleware de autenticación 
+    public function __construct() {
         $this->middleware('auth');
-	}
-	
-	//Método para listar todos los usuarios de la red social
-	public function index($search = null){
+    }
 
-		if (!empty($search)) {
-			//Liste los usuarios cuando el nickname coincida con la búsqueda
-			$users = User::where('nick', 'LIKE', '%'.$search.'%')
-							->orWhere('name', 'LIKE', '%'.$search.'%')
-							->orWhere('surname', 'LIKE', '%'.$search.'%')
-							->orderBy('id', 'desc')
-							->paginate(5);
-		}else{ 
-			//obtener todos los usuarios
-			$users = User::orderBy('id', 'desc')->paginate(5);
-		}
-		//Retornar una vista para listar todos los usuarios
-		return view('user.index', [
-			'users' => $users
-		]);
-	}
+    //Método para listar todos los usuarios de la red social
+    public function index($search = null) {
+        if (!empty($search)) {
+            //Liste los usuarios cuando el nickname coincida con la búsqueda
+            $users = User::where('nick', 'LIKE', '%' . $search . '%')
+                    ->orWhere('name', 'LIKE', '%' . $search . '%')
+                    ->orWhere('surname', 'LIKE', '%' . $search . '%')
+                    ->orderBy('id', 'desc')
+                    ->paginate(5);
+        } else {
+            //obtener todos los usuarios
+            $users = User::orderBy('id', 'desc')->paginate(5);
+        }
+        //Retornar una vista para listar todos los usuarios
+        return view('user.index', [
+            'users' => $users
+        ]);
+    }
 
     //Método para la configuración de usuarios
-    public function config(){
-    	//Retornar la vista
-    	return view('user.config');
+    public function config() {
+        //Retornar la vista
+        return view('user.config');
     }
 
     //Método para actualizar los registros de usuarios
-    public function update(Request $request){
+    public function update(Request $request) {
 
-    	//Variable del usuario objeto completo identificado
-    	$user = \Auth::user();
-    	//Id del usuario 
-    	$id = $user->id;
-    	//Validación de los datos del formulario
-    	$validate = $this->validate($request, [
+        //Variable del usuario objeto completo identificado
+        $user = \Auth::user();
+        //Id del usuario 
+        $id = $user->id;
+        //Validación de los datos del formulario
+        $validate = $this->validate($request, [
             'name' => 'required|string|max:255',
             'surname' => 'required|string|max:255',
-            'nick' => 'required|string|max:255|unique:users,nick,'.$id,
-            'email' => 'required|string|email|max:255|unique:users,email,'.$id,
-            ]);
+            'nick' => 'required|string|max:255|unique:users,nick,' . $id,
+            'email' => 'required|string|email|max:255|unique:users,email,' . $id,
+        ]);
 
-    	//Recoger datos del formulario de configuración de usuarios
-    	
-    	$name = $request->input('name');
-    	$surname = $request->input('surname');
-    	$nick = $request->input('nick');
-    	$email = $request->input('email');
+        //Recoger datos del formulario de configuración de usuarios
 
-    	//Asignar nuevos valores al objeto de usuario
-    	$user->name = $name;
-    	$user->surname = $surname;
-    	$user->nick = $nick;
-    	$user->email = $email;
+        $name = $request->input('name');
+        $surname = $request->input('surname');
+        $nick = $request->input('nick');
+        $email = $request->input('email');
 
-
-    	// Subir la imagen 
-    	# Se recoge la imagen del formulario
-    	$image_path = $request->file('image_path'); //objeto
-
-    	//Sí el objeto se recibe  se procederá en el almacenamiento
-    	if($image_path){
-    		//Almacenando el nombre de la imagen con la hora para que sea único
-    		$image_path_name = time().$image_path->getClientOriginalName();
-    		//Usando el objeto Storage y el objeto File  guardo la imagen en(storage/app/users)
-    		Storage::disk('users')->put($image_path_name, File::get($image_path));
-
-    		//Configurar el nombre de la imagen en las propiedades del objeto usuario
-    		$user->image = $image_path_name;
-    	}
+        //Asignar nuevos valores al objeto de usuario
+        $user->name = $name;
+        $user->surname = $surname;
+        $user->nick = $nick;
+        $user->email = $email;
 
 
-    	//Ejecutar consulta y cambios en la base de datos.
-    	$user->update();
+        // Subir la imagen 
+        # Se recoge la imagen del formulario
+        $image_path = $request->file('image_path'); //objeto
+        //Sí el objeto se recibe  se procederá en el almacenamiento
+        if ($image_path) {
+            //Almacenando el nombre de la imagen con la hora para que sea único
+            $image_path_name = time() . $image_path->getClientOriginalName();
+            //Usando el objeto Storage y el objeto File  guardo la imagen en(storage/app/users)
+            Storage::disk('users')->put($image_path_name, File::get($image_path));
 
-    	//Redirección y mensaje de confirmación mediante sesión flash
-    	return redirect()->route('config')
-    					 ->with(['message' => 'Usuario Actualizado correctamente']);
+            //Configurar el nombre de la imagen en las propiedades del objeto usuario
+            $user->image = $image_path_name;
+        }
 
+
+        //Ejecutar consulta y cambios en la base de datos.
+        $user->update();
+
+        //Redirección y mensaje de confirmación mediante sesión flash
+        return redirect()->route('config')
+                        ->with(['message' => 'Usuario Actualizado correctamente']);
     }
 
     //Método para gestión de imagenes con usuario registrado
-    public function getImage($filename){
-    	// Almacena la imagen en una variable 
-    	$file = Storage::disk('users')->get($filename);
-    	// retorna una respuesta con la variable que contiene la imagen.
-    	return new Response($file, 200);
+    public function getImage($filename) {
+        // Almacena la imagen en una variable 
+        $file = Storage::disk('users')->get($filename);
+        // retorna una respuesta con la variable que contiene la imagen.
+        return new Response($file, 200);
     }
 
     //Método para cargar el perfil de usuario
-    public function profile($id){
+    public function profile($id) {
         $user = User::find($id);
 
         //Retornar vista
         return view('user.profile', [
             'user' => $user
         ]);
-	}
-	
+    }
+
+//    método para obtener un pdf con todos los usuarios
+    public function exportPdf() {
+        $users = User::all();
+        $pdf = PDF::loadView('pdf.users', ['users'=> $users]);
+        return $pdf->download('users'.time().'pdf');
+    }
+//    método para obtener un pdf con todos los usuarios
+    public function exportExcel() {
+        
+        return Excel::download(new UsersExport, 'users'.time().'.xlsx');
+    }
 }

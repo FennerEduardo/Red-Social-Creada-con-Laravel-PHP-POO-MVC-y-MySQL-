@@ -4,6 +4,10 @@
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-8">
+            <a href="{{route('user.pdf')}}" >Descargar PDF de usuarios</a> ||
+            <a href="{{route('user.excel')}}" >Descargar Excel de usuarios</a>
+        </div>
+        <div class="col-md-8">
             @include('includes.message')
 
             @foreach($images as $image)

@@ -58,6 +58,10 @@ Route::get('/user/avatar/{filename}', 'UserController@getImage')->name('user.ava
 Route::get('/perfil/{id}', 'UserController@profile')->name('profile');
 // Ruta para mostrar todos los usuarios de la red
 Route::get('/gente/{search?}', 'UserController@index')->name('user.index');
+// Ruta para obtener un pdf con ellistado de usuarios de la red
+Route::get('/user-list-pdf/', 'UserController@exportPdf')->name('user.pdf');
+// Ruta para obtener un excel con ellistado de usuarios de la red
+Route::get('/user-list-excel/', 'UserController@exportExcel')->name('user.excel');
 
 /**********RUTAS PARA IMAGENES ****************** */
 // Ruta para la creación de imagénes

@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 //Cargar elmodelo de comentarios
 use App\Comment;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\PruebaMail;
+
 
 class CommentController extends Controller
 {
@@ -36,7 +39,7 @@ class CommentController extends Controller
 
         //Guardar los comentarios
         $comment->save();
-
+        
         //Retorno y redirección 
         return redirect()->route('image.detail', ['id' => $image_id])
                          ->with([
