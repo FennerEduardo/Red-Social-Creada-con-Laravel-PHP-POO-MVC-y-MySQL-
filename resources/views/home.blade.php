@@ -9,7 +9,11 @@
         </div>
         <div class="col-md-8">
             @include('includes.message')
-
+            
+            @foreach($eventos as $evento)
+            <!--Evento: {{$evento->name}}<br>-->
+            <?php var_dump($evento); ?>
+            @endforeach
             @foreach($images as $image)
                 @include('includes.image', ['image' => $image])
             @endforeach
